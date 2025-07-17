@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Malla Contador Auditor UDP</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    .semestre {
+      margin-bottom: 30px;
+    }
+    .ramo {
+      padding: 10px 15px;
+      border: 1px solid #ccc;
+      display: inline-block;
+      margin: 5px;
+      border-radius: 8px;
+      cursor: pointer;
+      background-color: #f0f0f0;
+      transition: background-color 0.3s ease;
+    }
+    .ramo:hover {
+      background-color: #d6eaff;
+    }
+    .ramo.aprobado {
+      text-decoration: line-through;
+      background-color: #b2fab4;
+      cursor: default;
+    }
+    .ramo.bloqueado {
+      background-color: #e0e0e0;
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+  </style>
+</head>
+<body>
+  <h1>Malla Contador Auditor - Universidad Diego Portales</h1>
+
+  <div id="contenedor"></div>
+
+  <script>
+    const ramos = [
+      { id: "soc_ent_leg", nombre: "Sociedad y Entorno Legal de la Empresa", semestre: 1 },
+      { id: "mate1", nombre: "Matemáticas I: Administración y negocios", semestre: 1 },
+      { id: "org_emp", nombre: "Sociedad, Organización, Empresa y Personas", semestre: 1 },
+      { id: "sist1", nombre: "Sistemas de Información y Comunicación I", semestre: 1 },
+      { id: "exp_com", nombre: "Expresión y Comunicación", semestre: 1 },
+
+      { id: "cont_ifrs", nombre: "Principios de Contabilidad IFRS", semestre: 2, prer: ["soc_ent_leg"] },
+      { id: "mate2", nombre: "Matemáticas II: Administración y negocios", semestre: 2, prer: ["mate1"] },
+      { id: "adm_emp", nombre: "Administración de Empresas", semestre: 2, prer: ["org_emp"] },
+      { id: "sist2", nombre: "Sistemas de Información y Comunicación II", semestre: 2, prer: ["sist1"] },
+      { id: "etica", nombre: "Ética Profesional y Responsabilidad Social Empresarial", semestre: 2 },
+      { id: "ing1", nombre: "Inglés General I", semestre: 2 },
+
+      { id: "cont_bas", nombre: "Proceso Contabilidad Básica IFRS", semestre: 3, prer: ["cont_ifrs"] },
+      { id: "der_trab", nombre: "Derecho del Trabajo y Seguridad Social", semestre: 3, prer: ["org_emp"] },
+      { id: "mate3", nombre: "Matemáticas III: Administración y negocios", semestre: 3, prer: ["mate2"] },
+      { id: "micro", nombre: "Sociedad y Entorno Microeconómico", semestre: 3, prer: ["mate2"] },
+      { id: "cfg1", nombre: "Curso de Formación General", semestre: 3 },
+      { id: "ing2", nombre: "Inglés General II", semestre: 3, prer: ["ing1"] },
+
+      { id: "cont_int", nombre: "Procesos Contabilidad Intermedia IFRS", semestre: 4, prer: ["cont_bas"] },
+      { id: "der_trib", nombre: "Derecho Tributario", semestre: 4, prer: ["der_trab"] },
+      { id: "costos", nombre: "Contabilidad y Procesos de Costos", semestre: 4, prer: ["cont_bas"] },
+      { id: "fin_corto", nombre: "Finanzas Empresa Corto Plazo", semestre: 4, prer: ["mate1", "adm_emp"] },
+      { id: "macro", nombre: "Sociedad y Entorno Macroeconómico", semestre: 4, prer: ["micro"] },
+      { id: "ing3", nombre: "Inglés General III", semestre: 4, prer: ["ing2"] },
+
+      { id: "cont_sup", nombre: "Procesos Contabilidad Superior IFRS", semestre: 5, prer: ["cont_int"] },
+      { id: "der_trib_emp", nombre: "Derecho Tributario Empresas", semestre: 5, prer: ["der_trib"] },
+      { id: "presup", nombre: "Gestión y Control Presupuestario", semestre: 5, prer: ["costos"] },
+      { id: "estad", nombre: "Estadística, Auditoría y Negocios", semestre: 5, prer: ["fin_corto"] },
+      { id: "comport", nombre: "Comportamiento Organizacional", semestre: 5, prer: ["adm_emp"] },
+      { id: "ing4", nombre: "Inglés Específico IV", semestre: 5, prer: ["ing3"] },
+
+      { id: "cont_adv", nombre: "Procesos Contabilidad Avanzada IFRS", semestre: 6, prer: ["cont_sup"] },
+      { id: "der_trib_pers", nombre: "Derecho Tributario Personas", semestre: 6, prer: ["der_trib"] },
+      { id: "aud1", nombre: "Gestión en Auditoría I", semestre: 6, prer: ["cont_int", "der_trib_emp"] },
+      { id: "fin_largo", nombre: "Finanzas Empresa Largo Plazo", semestre: 6, prer: ["fin_corto"] },
+      { id: "sist3", nombre: "Sistemas de Información y Comunicación III", semestre: 6, prer: ["sist2"] },
+      { id: "cfg2", nombre: "Curso de Formación General", semestre: 6 },
+
+      { id: "aud_ti", nombre: "Auditoría y Seguridad Sistemas TI", semestre: 7, prer: ["aud1"] },
+      { id: "aud_trib", nombre: "Auditoría Tributaria", semestre: 7, prer: ["aud1"] },
+      { id: "aud2", nombre: "Gestión en Auditoría II", semestre: 7, prer: ["aud1"] },
+      { id: "fin_corp", nombre: "Finanzas Corporativas", semestre: 7, prer: ["fin_largo"] },
+      { id: "dir_estrat", nombre: "Dirección Estratégica de Empresas", semestre: 7, prer: ["comport"] },
+      { id: "cfg3", nombre: "Curso de Formación General", semestre: 7 },
+
+      { id: "aud_fraude", nombre: "Auditoría Forense y Delitos Económicos", semestre: 8, prer: ["aud2"] },
+      { id: "aud_esp", nombre: "Auditorías Especiales", semestre: 8, prer: ["aud2"] },
+      { id: "riesgos", nombre: "Gestión de Riesgos", semestre: 8, prer: ["fin_corp"] },
+      { id: "ctrl_gest", nombre: "Control de Gestión Estratégico y Operacional", semestre: 8, prer: ["dir_estrat"] },
+      { id: "opt1", nombre: "Optativo de Profundización", semestre: 8 },
+
+      { id: "aud_juego", nombre: "Juego de Auditoría Basado en Riesgos", semestre: 9, prer: ["aud_esp", "aud2", "ctrl_gest"] },
+      { id: "metodo", nombre: "Metodología de la Investigación", semestre: 9, prer: ["dir_estrat"] },
+      { id: "induccion", nombre: "Inducción Laboral Profesional Auditoría", semestre: 9, prer: ["aud2"] },
+
+      { id: "opt2", nombre: "Optativo de Profundización", semestre: 10 },
+      { id: "opt3", nombre: "Optativo de Profundización", semestre: 10 },
+      { id: "seminario", nombre: "Seminario de Título", semestre: 10, prer: ["aud_juego", "metodo"] }
+    ];
+
+    const contenedor = document.getElementById("contenedor");
+    const ramosPorId = {};
+
+    function crearRamos() {
+      for (let i = 1; i <= 10; i++) {
+        const divSem = document.createElement("div");
+        divSem.classList.add("semestre");
+        divSem.innerHTML = `<h2>Semestre ${i}</h2>`;
+
+        ramos.filter(r => r.semestre === i).forEach(r => {
+          const divRamo = document.createElement("div");
+          divRamo.classList.add("ramo");
+          if (r.prer) divRamo.classList.add("bloqueado");
+          divRamo.dataset.id = r.id;
+          divRamo.dataset.prer = r.prer ? r.prer.join(",") : "";
+          divRamo.textContent = r.nombre;
+          contenedor.appendChild(divSem);
+          divSem.appendChild(divRamo);
+          ramosPorId[r.id] = divRamo;
+        });
+      }
+    }
+
+    function actualizarEstado() {
+      for (const id in ramosPorId) {
+        const ramo = ramosPorId[id];
+        const prer = ramo.dataset.prer;
+        if (!prer || ramo.classList.contains("aprobado")) continue;
+        const lista = prer.split(",").filter(Boolean);
+        const cumplidos = lista.every(pid => ramosPorId[pid].classList.contains("aprobado"));
+        if (cumplidos) ramo.classList.remove("bloqueado");
+      }
+    }
+
+    contenedor.addEventListener("click", e => {
+      const el = e.target;
+      if (!el.classList.contains("ramo") || el.classList.contains("bloqueado") || el.classList.contains("aprobado")) return;
+      el.classList.add("aprobado");
+      actualizarEstado();
+    });
+
+    crearRamos();
+    actualizarEstado();
+  </script>
+</body>
+</html>
